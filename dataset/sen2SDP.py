@@ -57,7 +57,7 @@ def sen2SDP(path):
     f = codecs.open(path, "r", encoding="utf-8")
     data = []
     pqdm = 0
-    fw = codecs.open("./sen2sdp_result/FilterNYT/train/train_sdp" + str(pqdm / 100) + ".pickle", 'wb')
+    fw = codecs.open("./sen2sdp_result/FilterNYT/test/test_sdp" + str(pqdm / 100) + ".pickle", 'wb')
     while 1:
         if pqdm % 100 == 0 and pqdm != 0:
             result = {
@@ -66,7 +66,7 @@ def sen2SDP(path):
             pickle.dump(result, fw, protocol=2)
             fw.close()
             data = []
-            fw = codecs.open("./sen2sdp_result/FilterNYT/train/train_sdp" + str(pqdm / 100) + ".pickle", 'wb')
+            fw = codecs.open("./sen2sdp_result/FilterNYT/test/test_sdp" + str(pqdm / 100) + ".pickle", 'wb')
             print(pqdm)
 
         line = f.readline()
@@ -104,6 +104,6 @@ def sen2SDP(path):
 if __name__ == "__main__":
     dep_parser = StanfordDependencyParser(model_path='edu/stanford/nlp/models/lexparser/englishPCFG.ser.gz')
     print("-------------test data start--------------")
-    sen2SDP("./trans2word_result/FilterNYT/train/train1.txt")
+    sen2SDP("./trans2word_result/FilterNYT/test/test_temp.txt")
     print("--------------test data end---------------")
 
