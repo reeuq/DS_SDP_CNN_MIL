@@ -21,10 +21,22 @@ def ListDocument(document):
     #       print "  Work phone #: ",
     #     print phone_number.number
 
+
 document = Document_pb2.Document()
 
+# relation = Document_pb2.Relation()
+#
+# entity = Document_pb2.Entity()
+
+# with open("./relations/kb_manual/testNewRelations.pb", "rb") as f:
+#     relation.ParseFromString(f.read())
+
+# with open("./heldout_relations/testPositive.pb", "rb") as f:
+#     document.ParseFromString(f.read())
+
 # Read the existing address book.
-with open("./heldout_relations/testPositive.pb", "rb") as f:
+with open("./manual-05-06/nyt-2005-2006.backup/1638661.xml.pb", "rb") as f:
     document.ParseFromString(f.read())
 
 ListDocument(document)
+
