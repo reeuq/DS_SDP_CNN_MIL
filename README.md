@@ -4,4 +4,6 @@
 
 
 ## 注意事项
-在NLTK包的stanford.py文件中，修改了第356行，添加了cell_separator='\t'
+1、在NLTK包的stanford.py文件中，修改了第356行，添加了cell_separator='\t'
+
+2、从训练数据中删除两条数据，具体删除内容，保存在train_temp.txt中
