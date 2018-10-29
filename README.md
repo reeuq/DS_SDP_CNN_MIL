@@ -9,4 +9,5 @@
 2、从训练数据中删除两条数据，具体删除内容，保存在train_temp.txt中
 
 ## 备注
-FilterNYT 数据集 label 类别总数为27
+FilterNYT 数据集 label 类别总数为27 0-26
+最大长度：49
