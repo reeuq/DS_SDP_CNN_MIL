@@ -1,6 +1,6 @@
-from gensim.models import word2vec
 import numpy as np
 from six.moves import cPickle as pickle
+import codecs
 
 
 def get_sentence_id(sen, dic):
@@ -16,61 +16,65 @@ def get_sentence_id(sen, dic):
     return sen_ids, max_len
 
 
-def reformat(labels):
-    # Map 0 to [1.0, 0.0, 0.0 ...], 1 to [0.0, 1.0, 0.0 ...]
-    labels = (np.arange(27) == labels[:, None]).astype(np.int32)
-    return labels
-
-
 if __name__ == "__main__":
-    with open('./sen2sdp_result_final/FilterNYT/train/train_sdp.pickle', 'rb') as f:
+    with open('./sen2sdp_result_final/FilterNYT/train/train_sdp_final.pickle', 'rb') as f:
         f_data = pickle.load(f)
         train_data = f_data["data"]
         del f_data
 
+    with open('./sen2sdp_result_final/FilterNYT/test/test_sdp_final.pickle', 'rb') as f:
+        f_data = pickle.load(f)
+        test_data = f_data["data"]
+        del f_data
 
+    f = codecs.open('./original/FilterNYT/dict_new.txt', 'r', encoding='utf-8')
+    dict = {}
+    word_number = 1
+    for word in f.readlines():
+        dict[word.strip()] = word_number
+        word_number += 1
+    f.close()
 
+    max_length = 0
+    for data in train_data:
+        data[2], temp_max_length = get_sentence_id(data[2], dict)
+        data[3] = (np.arange(27) == data[3]).astype(np.int32)
+        if temp_max_length > max_length:
+            max_length = temp_max_length
 
+    for data in test_data:
+        data[2], temp_max_length = get_sentence_id(data[2], dict)
+        data[3] = (np.arange(27) == data[3]).astype(np.int32)
+        if temp_max_length > max_length:
+            max_length = temp_max_length
 
+    f = open('./original/FilterNYT/vector.txt', 'r')
+    all_lines = f.readlines()
+    f.close()
 
-    train_labels = reformat(np.array(train_labels))
-    test_labels = reformat(np.array(test_labels))
+    Wv = np.zeros((len(all_lines) + 38, 50))
+    i = 1
+    for line in all_lines:
+        Wv[i, :] = list(map(float, line.split(' ')))
+        i += 1
 
-    words = set()
-    for each_sentence in train_sdp:
-        words.update(each_sentence.split())
-    for each_sentence in test_sdp:
-        words.update(each_sentence.split())
+    rng = np.random.RandomState(3435)
 
-    dictionary = dict()
-    wordEmbedding = [np.zeros(300, dtype=np.float32)]
-    for i, word in enumerate(words):
-        dictionary[word] = i + 1
-        try:
-            wordVec = model.wv[word]
-            wordEmbedding.append(wordVec)
-        except Exception:
-            wordEmbedding.append(-1 + 2 * np.random.random_sample(300))
-    wordEmbedding = np.array(wordEmbedding)
+    for j in range(i, (len(all_lines) + 38)):
+        Wv[j, :] = rng.uniform(low=-0.5, high=0.5, size=(1, 50))
 
-    train_sdp_id, train_max_len = get_sentence_id(train_sdp, dictionary)
-    test_sdp_id, test_max_len = get_sentence_id(test_sdp, dictionary)
-
-    with open('./../resource/generated/input.pickle', 'wb') as f:
+    with open('./final_dataset/data.pickle', 'wb') as f:
         parameter = {
-            'dictionary': dictionary,
-            'wordEmbedding': wordEmbedding,
+            'dictionary': dict,
+            'wordEmbedding': Wv,
         }
         train = {
-            'train_sdp_id': train_sdp_id,
-            'train_labels': train_labels,
+            'data': train_data,
         }
         test = {
-            'test_sdp_id': test_sdp_id,
-            'test_labels': test_labels,
+            'data': test_data,
         }
         pickle.dump(parameter, f, protocol=2)
         pickle.dump(train, f, protocol=2)
         pickle.dump(test, f, protocol=2)
-    print("train max len: ", train_max_len)
-    print("test max len: ", test_max_len)
+    print("train max len: ", max_length)
