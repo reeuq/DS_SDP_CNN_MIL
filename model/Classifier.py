@@ -9,12 +9,12 @@ from six.moves import cPickle as pickle
 import shutil
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from evaluation.Evaluation import precision_each_class
-from evaluation.Evaluation import recall_each_class
-from evaluation.Evaluation import f1_each_class_precision_recall
-from evaluation.Evaluation import f1_each_class
-from evaluation.Evaluation import class_label_count
-from evaluation.Evaluation import print_out
+# from evaluation.Evaluation import precision_each_class
+# from evaluation.Evaluation import recall_each_class
+# from evaluation.Evaluation import f1_each_class_precision_recall
+# from evaluation.Evaluation import f1_each_class
+# from evaluation.Evaluation import class_label_count
+# from evaluation.Evaluation import print_out
 
 
 # train
@@ -144,14 +144,14 @@ def randomize(dataset):
     return shuffled_dataset
 
 
-def trans_label(label):
-    count = class_label_count(label)
-    count_sum = float(sum(count))
-    weight = list(map(lambda x: count_sum/(6*x), count))
-    weight_matrix = np.zeros(label.shape)
-    for i in range(6):
-        weight_matrix[:, i] = weight[i]
-    return np.multiply(label, weight_matrix)
+# def trans_label(label):
+#     count = class_label_count(label)
+#     count_sum = float(sum(count))
+#     weight = list(map(lambda x: count_sum/(6*x), count))
+#     weight_matrix = np.zeros(label.shape)
+#     for i in range(6):
+#         weight_matrix[:, i] = weight[i]
+#     return np.multiply(label, weight_matrix)
 
 
 if __name__ == '__main__':
@@ -167,8 +167,19 @@ if __name__ == '__main__':
         test_data = test['data']
         del test
 
-    print('Training set: ', len(train_data))
-    print('Testing set: ', len(test_data))
+    np.random.seed(3435)
+    if len(train_data) % batch_size > 0:
+        extra_data_num = batch_size - len(train_data) % batch_size
+        rand_train = np.random.permutation(train_data)
+        extra_data = rand_train[:extra_data_num]
+        new_train_data = np.append(train_data, extra_data, axis=0)
+        new_test_data = np.array(test_data)
+    else:
+        new_train_data = np.array(train_data)
+        new_test_data = np.array(test_data)
+
+    print('Training set: ', len(new_train_data))
+    print('Testing set: ', len(new_test_data))
 
     # 删除日志文件
     try:
