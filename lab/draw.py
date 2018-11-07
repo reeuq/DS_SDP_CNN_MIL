@@ -12,3 +12,6 @@ with open('./../dataset/result_1/test_12_PR.txt', 'r') as f:
 
 plt.plot(y, x)
 plt.show()
+
+
+
