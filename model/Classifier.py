@@ -20,7 +20,7 @@ epochs = 15
 # k交叉验证
 k_fold = 5
 # 获取sdp特征最大长度
-sdp_max_len = 49
+sdp_max_len = 82
 # sdp特征embedding维度
 sdp_dim = 50
 # 输入数据channel个数
@@ -63,7 +63,7 @@ class Model(object):
             # filter_2 = tf.get_variable("filter_2", shape=[4, sdp_dim, input_channel_num*2, each_filter_num],
             #                            initializer=tf.truncated_normal_initializer())
             # bias_2 = tf.get_variable("bias_2", shape=[each_filter_num], initializer=tf.zeros_initializer)
-            filter_3 = tf.get_variable("filter_3", shape=[5, sdp_dim, input_channel_num, each_filter_num],
+            filter_3 = tf.get_variable("filter_3", shape=[3, sdp_dim, input_channel_num, each_filter_num],
                                        initializer=tf.truncated_normal_initializer())
             bias_3 = tf.get_variable("bias_3", shape=[each_filter_num], initializer=tf.zeros_initializer)
 
@@ -252,33 +252,25 @@ def now():
 
 if __name__ == '__main__':
     print('load data........')
-    with open('./../dataset/final_dataset/data.pickle', 'rb') as f:
-        parameter = pickle.load(f)
-        wordEmbedding = parameter['wordEmbedding']
-        del parameter
-        train = pickle.load(f)
-        train_data = train['data']
-        del train
-        test = pickle.load(f)
-        test_data = test['data']
-        del test
+
+    wordEmbedding = np.load('./../new_dataset/original/FilterNYT/w2v.npy')
+    train_data = np.load('./../new_dataset/original/FilterNYT/train/bags_feature.npy')
+    test_data = np.load('./../new_dataset/original/FilterNYT/test/bags_feature.npy')
 
     np.random.seed(3435)
-    if len(train_data) % batch_size > 0:
-        extra_data_num = batch_size - len(train_data) % batch_size
+    if train_data.shape[0] % batch_size > 0:
+        extra_data_num = batch_size - train_data.shape[0] % batch_size
         rand_train = np.random.permutation(train_data)
         extra_data = rand_train[:extra_data_num]
         new_train_data = np.append(train_data, extra_data, axis=0)
-        new_test_data = np.array(test_data)
     else:
-        new_train_data = np.array(train_data)
-        new_test_data = np.array(test_data)
+        new_train_data = train_data
 
     new_train_data = np.random.permutation(new_train_data)
     n_train_batches = new_train_data.shape[0] // batch_size
 
     print('Training set: ', new_train_data.shape)
-    print('Testing set: ', new_test_data.shape)
+    print('Testing set: ', test_data.shape)
 
     # 删除日志文件
     try:
@@ -322,7 +314,7 @@ if __name__ == '__main__':
 
                 train_summary_writer.add_summary(train_summary, global_step)
 
-            true_y, pred_y, pred_p = predict(new_test_data, eval_model, sess)
+            true_y, pred_y, pred_p = predict(test_data, eval_model, sess)
             all_pre, all_rec = eval_metric(true_y, pred_y, pred_p)
 
             last_pre, last_rec = all_pre[-1], all_rec[-1]

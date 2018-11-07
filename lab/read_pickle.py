@@ -1,21 +1,9 @@
-from six.moves import cPickle as pickle
+import os
+import numpy as np
 
-f = open("./../dataset/sen2sdp_result_final/FilterNYT/train/train_sdp.pickle", 'rb')
-f_data = pickle.load(f)
-data = f_data["data"]
-f.close()
+root_path = './../new_dataset/original/FilterNYT/'
+path = os.path.join(root_path, 'train/')
 
-f = open("./../dataset/sen2sdp_result_final/FilterNYT/train/train_sdp_final.pickle", 'rb')
-f_data = pickle.load(f)
-data_new = f_data["data"]
-f.close()
+x = np.load(root_path + 'w2v.npy')
 
-times = 0
-for i in range(len(data)):
-    if data[i] != data_new[i]:
-        print(data[i])
-        print(data_new[i])
-        times += 1
-
-print(times)
-
+print()
