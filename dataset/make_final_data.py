@@ -10,6 +10,8 @@ def get_sentence_id(sen, dic):
         sen_id = []
         for each_word in each_sen.split():
             sen_id.append(dic.get(each_word))
+        while len(sen_id) < 49:
+            sen_id.append(0)
         sen_ids.append(sen_id)
         if len(each_sen.split()) > max_len:
             max_len = len(each_sen.split())
