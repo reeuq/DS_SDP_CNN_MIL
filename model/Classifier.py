@@ -74,7 +74,7 @@ class Model(object):
         with tf.name_scope('pooling'):
             # max_pool_1 = tf.nn.max_pool(conv_1, ksize=[1, sdp_max_len-2, 1, 1], strides=[1, 1, 1, 1], padding='VALID')
             # max_pool_2 = tf.nn.max_pool(conv_2, ksize=[1, sdp_max_len-3, 1, 1], strides=[1, 1, 1, 1], padding='VALID')
-            max_pool_3 = tf.nn.max_pool(conv_3, ksize=[1, sdp_max_len-4, 1, 1], strides=[1, 1, 1, 1], padding='VALID')
+            max_pool_3 = tf.nn.max_pool(conv_3, ksize=[1, sdp_max_len-2, 1, 1], strides=[1, 1, 1, 1], padding='VALID')
 
             # max_pool = tf.concat([max_pool_1, max_pool_2, max_pool_3], axis=3)
 
@@ -114,7 +114,7 @@ class Model(object):
                                            initializer=tf.constant_initializer(0), dtype=tf.int32)
         # 选择使用的优化器
         if is_training:
-            self.train_op = tf.train.GradientDescentOptimizer(starter_learning_rate)\
+            self.train_op = tf.train.AdadeltaOptimizer(starter_learning_rate)\
                 .minimize(self.loss, global_step=self.global_step)
 
 
@@ -128,7 +128,7 @@ def select_instance(data_list, model, session):
 
     for idx, num in enumerate(nums):
         max_ins_id = 0
-        label = np.argmax(labels[idx], 0)
+        label = labels[idx][0]
         if num > 1:
             batch_sents = np.array(sents[idx])
             feed_dictory = {model.sdp_ids: batch_sents}
@@ -138,7 +138,7 @@ def select_instance(data_list, model, session):
             max_ins_id = np.argmax(batch_pre[:, label], 0)
 
         select_sent.append(sents[idx][max_ins_id])
-        select_label.append(labels[idx])
+        select_label.append((np.arange(27) == label).astype(np.int32))
     return list(map(lambda x: np.array(x), [select_sent, select_label]))
 
 
@@ -152,8 +152,7 @@ def predict(data_list, model, session):
     labels = [data[3] for data in data_list]
 
     for idx, num in enumerate(nums):
-        label = np.argmax(labels[idx], 0)
-        true_y.append(label)
+        true_y.append(labels)
 
         batch_sents = np.array(sents[idx])
         feed_dictory = {model.sdp_ids: batch_sents}
@@ -193,7 +192,7 @@ def predict(data_list, model, session):
 
 def eval_metric(true_y, pred_y, pred_p):
     assert len(true_y) == len(pred_p)
-    positive_num = len([i for i in true_y if i > 0])
+    positive_num = len([i for i in true_y if i[0] > 0])
     index = np.argsort(pred_p)[::-1]
 
     tp = 0
@@ -206,15 +205,19 @@ def eval_metric(true_y, pred_y, pred_p):
         i = true_y[index[idx]]
         j = pred_y[index[idx]]
 
-        if i == 0:  # NA relation
+        if i[0] == 0:  # NA relation
             if j > 0:
                 fp += 1
         else:
             if j == 0:
                 fn += 1
-            elif i == j:
-                tp += 1
-
+            else:
+                for k in i:
+                    if k == -1:
+                        break
+                    if k == j:
+                        tp += 1
+                        break
         if fp + tp == 0:
             precision = 1.0
         else:
