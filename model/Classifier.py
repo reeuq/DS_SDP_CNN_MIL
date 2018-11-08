@@ -14,9 +14,9 @@ batch_size = 128
 # 存储模型个数
 num_checkpoints = 5
 # 初始学习率
-starter_learning_rate = 0.005
+starter_learning_rate = 0.03
 # 训练轮数
-epochs = 15
+epochs = 25
 # k交叉验证
 k_fold = 5
 # 获取sdp特征最大长度
@@ -69,7 +69,7 @@ class Model(object):
 
             # conv_1 = tf.nn.relu(tf.nn.conv2d(self.sdp_embedded_train, filter_1, [1, 1, 1, 1], padding='VALID') + bias_1)
             # conv_2 = tf.nn.relu(tf.nn.conv2d(self.sdp_embedded_train, filter_2, [1, 1, 1, 1], padding='VALID') + bias_2)
-            conv_3 = tf.nn.relu(tf.nn.conv2d(self.input, filter_3, [1, 1, 1, 1], padding='VALID') + bias_3)
+            conv_3 = tf.nn.tanh(tf.nn.conv2d(self.input, filter_3, [1, 1, 1, 1], padding='VALID') + bias_3)
 
         with tf.name_scope('pooling'):
             # max_pool_1 = tf.nn.max_pool(conv_1, ksize=[1, sdp_max_len-2, 1, 1], strides=[1, 1, 1, 1], padding='VALID')
@@ -152,7 +152,7 @@ def predict(data_list, model, session):
     labels = [data[3] for data in data_list]
 
     for idx, num in enumerate(nums):
-        true_y.append(labels)
+        true_y.append(labels[idx])
 
         batch_sents = np.array(sents[idx])
         feed_dictory = {model.sdp_ids: batch_sents}
