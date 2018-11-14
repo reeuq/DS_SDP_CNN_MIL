@@ -96,8 +96,8 @@ class Model(object):
             # + tf.nn.l2_loss(filter_2) + tf.nn.l2_loss(bias_2)\
             # + tf.nn.l2_loss(filter_3) + tf.nn.l2_loss(bias_3)
             # + tf.nn.l2_loss(filter_1) + tf.nn.l2_loss(bias_1)
-            self.loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=self.labels))
-                        # + l2_loss_beta * l2_loss
+            self.loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=self.labels)) + \
+                        l2_loss_beta * l2_loss
             tf.summary.scalar('loss', self.loss)
 
         with tf.name_scope("prediction"):
